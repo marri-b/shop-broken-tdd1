@@ -16,6 +16,28 @@ FREE_DELIVERY_FROM_KOPEKS = 500_000
 TIER_DISCOUNTS = ((10, 5), (25, 10), (50, 15))
 REQUIRED_LINE_KEYS = ("sku", "qty", "unit_price_kopeks")
 
+
+def _line_error(line: dict[str, str]) -> str | None:
+    for key in REQUIRED_LINE_KEYS:
+        if key not in line:
+            return f"missing key {key}"
+    if not line["sku"]:
+        return "empty sku"
+    try:
+        qty = int(line["qty"])
+    except ValueError:
+        return "non-numeric qty"
+    if qty <= 0:
+        return "non-positive qty"
+    try:
+        price = int(line["unit_price_kopeks"])
+    except ValueError:
+        return "non-numeric price"
+    if price < 0:
+        return "negative price"
+    return None
+
+
 def validate_order(
     lines: list[dict[str, str]],
     promo_code: str = "",
@@ -27,23 +49,9 @@ def validate_order(
 
     seen: set[str] = set()
     for i, line in enumerate(lines, start=1):
-        for key in REQUIRED_LINE_KEYS:
-            if key not in line:
-                return f"line {i} is missing key {key}"
-        if not line["sku"]:
-            return f"line {i} has an empty sku"
-        try:
-            qty = int(line["qty"])
-        except ValueError:
-            return f"line {i} has a non-numeric qty"
-        if qty <= 0:
-            return f"line {i} has a non-positive qty"
-        try:
-            price = int(line["unit_price_kopeks"])
-        except ValueError:
-            return f"line {i} has a non-numeric price"
-        if price < 0:
-            return f"line {i} has a negative price"
+        err = _line_error(line)
+        if err is not None:
+            return f"line {i} {err}"
         if line["sku"] in seen:
             return f"line {i} repeats sku {line['sku']}"
         seen.add(line["sku"])
@@ -53,6 +61,7 @@ def validate_order(
     if shipping_city and shipping_city not in SUPPORTED_CITIES:
         return "unsupported city"
     return None
+
 
 def calculate_order_total(
     lines: list[dict[str, str]],
