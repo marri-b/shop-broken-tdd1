@@ -16,9 +16,9 @@ Run one test at a time while you work:
 from shop.checkout import calculate_order_total, validate_order
 
 
-def line(sku: str = "SKU-1", qty: str = "1", unit_price_kopecks: str = "10000") -> dict[str, str]:
+def line(sku: str = "SKU-1", qty: str = "1", unit_price_kopeks: str = "10000") -> dict[str, str]:
     """Build one order line the way the warehouse export delivers it."""
-    return {"sku": sku, "qty": qty, "unit_price_kopecks": unit_price_kopecks}
+    return {"sku": sku, "qty": qty, "unit_price_kopeks": unit_price_kopeks}
 
 
 def test_smoke_single_line_without_delivery() -> None:
@@ -54,12 +54,12 @@ def test_zero_quantity_is_rejected() -> None:
 
 def test_non_numeric_price_is_rejected() -> None:
     """Spec 3, rule 6: `unit_price_kopecks` must be a whole number."""
-    assert validate_order([line(unit_price_kopecks="abc")]) is not None
+    assert validate_order([line(unit_price_kopeks="abc")]) is not None
 
 
 def test_negative_price_is_rejected() -> None:
     """Spec 3, rule 7: a price may not be negative."""
-    assert validate_order([line(unit_price_kopecks="-1")]) is not None
+    assert validate_order([line(unit_price_kopeks="-1")]) is not None
 
 
 def test_duplicate_sku_is_rejected() -> None:
@@ -79,7 +79,7 @@ def test_unsupported_city_is_rejected() -> None:
 
 def test_valid_order_passes_validation() -> None:
     """Spec 3: a good order gets None back instead of a reason."""
-    assert validate_order([line()]) is not None
+    assert validate_order([line()]) is None
 
 
 def test_no_discount_below_first_tier() -> None:
