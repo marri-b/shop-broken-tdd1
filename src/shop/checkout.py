@@ -47,8 +47,6 @@ def validate_order(
     if not lines:
         return "order has no lines"
 
- (checkout and fix inventory)
-
     seen: set[str] = set()
     for i, line in enumerate(lines, start=1):
         err = _line_error(line)
